@@ -115,4 +115,67 @@ router.delete("/:id", (req, res) => {
 		})
 })
 
+// a route for listing out a hub's messages
+// this handles GET /api/hubs/:id/messages
+router.get("/:id/messages", (req, res) =>{
+    hubs.findHubMessages(req.params.id)
+        .then((messages) =>{
+            res.status(200).json(messages)
+            // or just res.json(messages) since express defaults to a 200
+        })
+        .catch((error) =>{
+            console.log(error)
+            res.status(500).json({
+                message: "could not get the hub messages",
+            })
+
+        })
+})
+
+// get a specific message by id
+// this handles GET /api/hubs/:id/messages/:messageID
+router.get("/:hubId/messages/:messageId", (req, res) =>{
+    hubs.findHubMessageById(req.params.hubId, req.params.messageId)
+        .then((message) =>{
+            if (message) {
+                res.json(message)
+            } else {
+                res.status(404).json({
+                    message: "Message was not found",
+                })
+            }
+        })
+        .catch((error) =>{
+            console.log(error)
+            res.status(500).json({
+                message: "could not get the hub message",
+            })
+
+        })
+})
+
+// endpoint for creating hub message
+// this handles POST /api/hubs/:id/messages
+router.post("/:id/messages", (req, res) =>{
+    const { sender, text } = req.body
+    if (!sender || !text) {
+        return res.status(400).json({
+            message: "Need sender and text values",
+        })
+    }
+    
+    hubs.addHubMessage(req.params.id, req.body)
+        .then((newMessage) =>{
+            res.status(201).json(newMessage)
+        })
+        .catch((error) =>{
+            console.log(error)
+            res.status(500).json({
+                message: "could not create hub messages",
+            })
+
+        })
+})
+
+
 module.exports = router
